@@ -29,7 +29,6 @@ export default function PlayerDetail() {
     const gameName = router.query.playerId?.[1]
     const tagLine = router.query.playerId?.[2]
 
-
     async function fetchData() {
       if(gameName && tagLine){
         const response = await fetch(
@@ -37,116 +36,54 @@ export default function PlayerDetail() {
         );
         const {data} = await response.json();
         setData(data)
-        console.log(data)
         
-        const newTeamResults = data.map((match: any) => {
+        const newTeamResults: boolean[] = [];
+        const newKills: number[] = [];
+        const newDeaths: number[] = [];
+        const newAssists: number[] = [];
+        const newCardsmall: string[] = [];
+        const newAgentsmall: string[] = [];
+        const newMatchStarted: string[] = [];
+        const newMatchDuration: number[] = [];
+
+        data.forEach((match: any) => {
           const allPlayers = match.players.all_players;
           const playerIndex = allPlayers.findIndex(
             (player: any) => player.name === gameName && player.tag === tagLine
           );
           if (playerIndex !== -1) {
             const team = allPlayers[playerIndex].team === "Red" ? "red" : "blue";
-            return match.teams[team].has_won;
-          } else {
-            return null;
+            newTeamResults.push(match.teams[team].has_won);
+            newKills.push(allPlayers[playerIndex].stats.kills);
+            newDeaths.push(allPlayers[playerIndex].stats.deaths);
+            newAssists.push(allPlayers[playerIndex].stats.assists);
+            newCardsmall.push(allPlayers[playerIndex].assets.card.small);
+            newAgentsmall.push(allPlayers[playerIndex].assets.agent.small);
+            newMatchStarted.push(match.metadata.game_start_patched);
+            newMatchDuration.push(allPlayers[playerIndex].session_playtime.minutes);
           }
         });
+
         setTeamResult(newTeamResults);
-
-        const newKills = data.map((match: any) => {
-          const allPlayers = match.players.all_players;
-          const playerIndex = allPlayers.findIndex(
-            (player: any) => player.name === gameName && player.tag === tagLine
-          );
-          if (playerIndex !== -1) {            
-            return allPlayers[playerIndex].stats.kills;
-          } else {
-            return null;
-          }
-        });
         setKills(newKills);
-
-        const newDeaths = data.map((match: any) => {
-          const allPlayers = match.players.all_players;
-          const playerIndex = allPlayers.findIndex(
-            (player: any) => player.name === gameName && player.tag === tagLine
-          );
-          if (playerIndex !== -1) {            
-            return allPlayers[playerIndex].stats.deaths;
-          } else {
-            return null;
-          }
-        });
         setDeaths(newDeaths);
-
-        const newAssists = data.map((match: any) => {
-          const allPlayers = match.players.all_players;
-          const playerIndex = allPlayers.findIndex(
-            (player: any) => player.name === gameName && player.tag === tagLine
-          );
-          if (playerIndex !== -1) {            
-            return allPlayers[playerIndex].stats.assists;
-          } else {
-            return null;
-          }
-        });
         setAssists(newAssists);
-
-        const newCardsmall = data.map((match: any) => {
-          const allPlayers = match.players.all_players;
-          const playerIndex = allPlayers.findIndex(
-            (player: any) => player.name === gameName && player.tag === tagLine
-          );
-          if (playerIndex !== -1) {            
-            return allPlayers[playerIndex].assets.card.small;
-          } else {
-            return null;
-          }
-        });
         setCardsmall(newCardsmall);
-
-        const newAgentsmall = data.map((match: any) => {
-          const allPlayers = match.players.all_players;
-          const playerIndex = allPlayers.findIndex(
-            (player: any) => player.name === gameName && player.tag === tagLine
-          );
-          if (playerIndex !== -1) {            
-            return allPlayers[playerIndex].assets.agent.small;
-          } else {
-            return null;
-          }
-        });
         setAgentsmall(newAgentsmall);
-
-        const newMatchstarted = data.map((match: any) => {
-          return match.metadata.game_start_patched;
-        });
-        setMatchStarted(newMatchstarted);
-
-        const newMatchduration = data.map((match: any) => {
-          const allPlayers = match.players.all_players;
-          const playerIndex = allPlayers.findIndex(
-            (player: any) => player.name === gameName && player.tag === tagLine
-          );
-          if (playerIndex !== -1) {            
-            return allPlayers[playerIndex].session_playtime.minutes;
-          } else {
-            return null;
-          }
-        });
-        setMatchDuration(newMatchduration);
-        
+        setMatchStarted(newMatchStarted);
+        setMatchDuration(newMatchDuration);
       }
-    } 
-    fetchData()
-  },[router.query.playerId])
+    }
+
+    fetchData();
+  }, [router.query.playerId]);
     return (
       <Group mt={50} mx={100} justify="center">
         <Table highlightOnHover withColumnBorders withTableBorder>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Map</Table.Th>
-              <Table.Th>Team result</Table.Th>
+              <Table.Th>Team Win</Table.Th>
               <Table.Th>kills</Table.Th>
               <Table.Th>deaths</Table.Th>
               <Table.Th>assists</Table.Th>
